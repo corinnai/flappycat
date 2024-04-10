@@ -1,12 +1,11 @@
 import Cat from "./cat.js";
 import Ground from "./ground.js";
 import CactusController from "./cactusController.js";
-import Background from "./background.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const game_speed_start = 0.65;
+const game_speed_start = 0.75;
 const game_width = 800;
 const game_height = 250;
 const cat_width = 287 / 5;
@@ -17,26 +16,23 @@ const ground_width = 2475;
 const ground_height = 129/ 10; 
 const ground_and_cactus_speed = 0.5;
 
-const background_width = 900 ;
-const background_height = 555/1 ;
-
 const cactus_config = [
-    { width : 126 / 2 ,   
-      height : 210 / 2,
+    { width : 126 / 3 ,   
+      height : 210 / 3,
       image : "./cantus1.png"
     },
-    { width : 156 / 2 ,   
-      height : 210 / 2 ,
+    { width : 156 / 3 ,   
+      height : 210 / 3 ,
       image : "./cantus2.png"
      }
 ]
 
 
 //Game objects
+
 let cat = null;
 let ground = null;
 let cactusController = null;
-let background = null;
 
 
 let scaleRatio = null;
@@ -46,7 +42,6 @@ let gameOver = false;
 let hasAddedEventListenersForRestart = false;
 let waitingToStart = true;
  
-
 function createObject(){
     const catWidthInGame = cat_width * scaleRatio;
     const catHeightInGame = cat_height * scaleRatio;
@@ -55,9 +50,6 @@ function createObject(){
 
     const groundWidthInGame = ground_width * scaleRatio;
     const groundHeightInGame = ground_height * scaleRatio;
-
-    const backgroundWidthInGame = background_width * scaleRatio;
-    const backgroundHeightInGame = background_height * scaleRatio; 
 
     cat = new Cat(
         ctx, 
@@ -74,13 +66,6 @@ function createObject(){
         ground_and_cactus_speed,
         scaleRatio);
 
-    background = new Background (
-        ctx,
-        backgroundWidthInGame,
-        backgroundHeightInGame, 
-        ground_and_cactus_speed,
-        scaleRatio);
-
     const cactusImages = cactus_config.map(cactus => { // transform the string img into an actual image
         const image = new Image();
         image.src = cactus.image;
@@ -91,15 +76,9 @@ function createObject(){
         };
     });
 
-    cactusController = new CactusController ( 
-        ctx, 
-        cactusImages, 
-        scaleRatio, 
-        ground_and_cactus_speed );
-
-    
-    
+    cactusController = new CactusController ( ctx, cactusImages, scaleRatio, ground_and_cactus_speed );
 }
+
 
 function setScreen() {
     scaleRatio = getScaleRatio();
@@ -174,6 +153,7 @@ function setupGameReset(){
     if(!hasAddedEventListenersForRestart){
         hasAddedEventListenersForRestart = true;
 
+
         setTimeout(()=>{
             window.addEventListener("keyup" , reset, {once: true});
             window.addEventListener("touchstart" , reset, {once: true});
@@ -197,13 +177,11 @@ function gameLoop(currentTime){
 
 
     if(!gameOver && !waitingToStart){
-
     // update game objects
-    background.update(gameSpeed, frameTime);
+   
     cat.update(gameSpeed, frameTime);
     cactusController.update(gameSpeed , frameTime)
     ground.update(gameSpeed, frameTime);
-    
     }
 
     if(!gameOver && cactusController.collideWith(cat)){
@@ -213,11 +191,10 @@ function gameLoop(currentTime){
 
 
     // draw game objects 
-    background.draw();
+
     ground.draw();
     cactusController.draw();
     cat.draw();
-    
 
 
     if(gameOver){
@@ -227,8 +204,11 @@ function gameLoop(currentTime){
     if(waitingToStart){
         showStartGameText();
     }
+
+
         requestAnimationFrame(gameLoop);
 }
+
 
 requestAnimationFrame(gameLoop);
 

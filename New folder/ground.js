@@ -12,7 +12,7 @@ export default class Ground{
         this.y = this.canvas.height - this.height ;
 
         this.groundImage = new Image();
-        this.groundImage.src = "./gr.png";
+        this.groundImage.src = "./ground.png";
        
 
     }
