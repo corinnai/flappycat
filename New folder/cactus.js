@@ -13,7 +13,12 @@ export default class Cactus {
     }
 
     draw(){
-        this.ctx.drawImage( this.image, this.x, this.y, this.width, this.height);
+        this.ctx.drawImage(
+            this.image, 
+            this.x, 
+            this.y, 
+            this.width, 
+            this.height);
     }
 
     collideWith(sprite){

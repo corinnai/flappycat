@@ -1,8 +1,8 @@
 import Cactus from "./cactus.js";
 
 export default class CactusController {
-        cactus_interval_min = 1500;
-        cactus_interval_max = 2000;
+        cactus_interval_min = 1600;
+        cactus_interval_max = 3000;
 
     nextCactusInterval = null;
     cacti = [];
@@ -34,7 +34,7 @@ export default class CactusController {
         const index = this.getRandomNumber(0, this.cactusImages.length - 1);
         const cactusImage = this.cactusImages[index];
         const x = this.canvas.width * 1.5;
-        const y = this.canvas.height - cactusImage.height -15;
+        const y = this.canvas.height - cactusImage.height -13;
 
         const cactus = new Cactus( 
             this.ctx, 

@@ -23,7 +23,7 @@ export default class Cat {
 
 
         this.x = 10 * scaleRatio;
-        this.y = this.canvas.height - this.height - 15 * scaleRatio;
+        this.y = this.canvas.height - this.height - 13 * scaleRatio;
         this.yStandingPosition = this.y;
 
         this.stillCat= new Image();

@@ -1,39 +1,51 @@
 import Cat from "./cat.js";
 import Ground from "./ground.js";
 import CactusController from "./cactusController.js";
+import Background from "./background.js";
+import CoinController from "./coinController.js";
 
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-const game_speed_start = 0.75;
+const game_speed_start = 0.65;
 const game_width = 800;
 const game_height = 250;
 const cat_width = 287 / 5;
 const cat_height = 295 / 5 ;
 const max_jump_height = game_height;
 const min_jump_height = 150;
+
 const ground_width = 2475; 
 const ground_height = 129/ 10; 
 const ground_and_cactus_speed = 0.5;
 
+const background_width = 900 ;
+const background_height = 555/1 ;
+
+const coin_config = [
+    { width : 193/ 4,   
+      height : 198/4 ,
+      image : "./coin.png"
+    },
+]
 const cactus_config = [
-    { width : 126 / 3 ,   
-      height : 210 / 3,
+    { width : 126 / 2 ,   
+      height : 210 / 2,
       image : "./cantus1.png"
     },
-    { width : 156 / 3 ,   
-      height : 210 / 3 ,
+    { width : 156 / 2 ,   
+      height : 210 / 2 ,
       image : "./cantus2.png"
      }
 ]
 
 
 //Game objects
-
 let cat = null;
 let ground = null;
 let cactusController = null;
-
+let background = null;
+let coinController = null;
 
 let scaleRatio = null;
 let previousTime = null;
@@ -41,8 +53,12 @@ let gameSpeed = game_speed_start;
 let gameOver = false;
 let hasAddedEventListenersForRestart = false;
 let waitingToStart = true;
+let coinCounter = 0;
+let gameComplete = false;
  
-function createObject(){
+
+function createObject()
+{
     const catWidthInGame = cat_width * scaleRatio;
     const catHeightInGame = cat_height * scaleRatio;
     const minJumpInGame = min_jump_height * scaleRatio;
@@ -50,6 +66,9 @@ function createObject(){
 
     const groundWidthInGame = ground_width * scaleRatio;
     const groundHeightInGame = ground_height * scaleRatio;
+
+    const backgroundWidthInGame = background_width * scaleRatio;
+    const backgroundHeightInGame = background_height * scaleRatio; 
 
     cat = new Cat(
         ctx, 
@@ -66,6 +85,13 @@ function createObject(){
         ground_and_cactus_speed,
         scaleRatio);
 
+    background = new Background (
+        ctx,
+        backgroundWidthInGame,
+        backgroundHeightInGame, 
+        ground_and_cactus_speed,
+        scaleRatio);
+
     const cactusImages = cactus_config.map(cactus => { // transform the string img into an actual image
         const image = new Image();
         image.src = cactus.image;
@@ -76,11 +102,34 @@ function createObject(){
         };
     });
 
-    cactusController = new CactusController ( ctx, cactusImages, scaleRatio, ground_and_cactus_speed );
+    cactusController = new CactusController ( 
+        ctx, 
+        cactusImages, 
+        scaleRatio, 
+        ground_and_cactus_speed );
+
+        const coinImages = coin_config.map(coin => { // transform the string img into an actual image
+            const image = new Image();
+            image.src = coin.image;
+            return {
+                image : image,
+                width : coin.width * scaleRatio,
+                height : coin.height * scaleRatio
+            };
+        });
+
+    coinController = new CoinController (
+        ctx, 
+        coinImages,
+        ground_and_cactus_speed,
+        scaleRatio);
+    
 }
 
 
-function setScreen() {
+
+function setScreen() 
+{
     scaleRatio = getScaleRatio();
     canvas.width = game_width * scaleRatio;
     canvas.height = game_height * scaleRatio;
@@ -92,13 +141,15 @@ setScreen();
 
 window.addEventListener("resize", setScreen);
 
-    if(screen.orientation) {
+    if(screen.orientation) 
+    {
         screen.orientation.addEventListener("change", setScreen);
     }
 
 
 
-function getScaleRatio(){
+function getScaleRatio()
+{
     const screenHeight = Math.min( window.innerHeight, document.documentElement.clientHeight); // min height of display and user height screen
     const screenWidth = Math.min( window.innerWidth, document.documentElement.clientWidth );
 
@@ -114,16 +165,20 @@ function getScaleRatio(){
 }
 
 
-function reset(){
+function reset()
+{
+    coinCounter = 0;  // Reset the coin counter
     hasAddedEventListenersForRestart = false;
     gameOver = false;
     waitingToStart = false;
     ground.reset();
     cactusController.reset();
+    coinController.reset();
     gameSpeed = game_speed_start;
 }
 
-function showStartGameText(){
+function showStartGameText()
+{
     const fontSize = 40 * scaleRatio;
     ctx.font = `${fontSize}px Verdana`;
     ctx.fillStyle = "grey";
@@ -132,15 +187,25 @@ function showStartGameText(){
     ctx.fillText("Tap Screen or Press Space To Start", x, y);
 }
 
-function clearScreen(frameTime){
+function drawScore() 
+{
+    const fontSize = 20 * scaleRatio; // Scale the font size with the game's scale ratio
+    ctx.font = `${fontSize}px Verdana`;
+    ctx.fillStyle = "grey";
+    const scoreText = `Coins: ${coinCounter}`;
+    const x = canvas.width / 1.2;
+    const y = canvas.height/9;
+    ctx.fillText(scoreText, x, y); // You can adjust the position as needed
+}
+
+function clearScreen(frameTime)
+{
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-
-
-
-function showGameOver(){
+function showGameOver()
+{
     const fontSize = 70 * scaleRatio;
     ctx.font = `${fontSize}px Verdana `;
     ctx.fillStyle = "grey";
@@ -149,10 +214,20 @@ function showGameOver(){
     ctx.fillText("Game Over" , x, y);
 }
 
-function setupGameReset(){
+function gameFinish()
+{
+    const fontSize = 50 * scaleRatio;
+    ctx.font = `${fontSize}px Verdana `;
+    ctx.fillStyle = "black";
+    const x = canvas.width/8 ;
+    const y = canvas.height/2;
+    ctx.fillText("Congratulations! You win!" , x, y);  
+}
+
+function setupGameReset() 
+{
     if(!hasAddedEventListenersForRestart){
         hasAddedEventListenersForRestart = true;
-
 
         setTimeout(()=>{
             window.addEventListener("keyup" , reset, {once: true});
@@ -162,53 +237,95 @@ function setupGameReset(){
     }
 }
 
-function gameLoop(currentTime){
+function gameLoop(currentTime)
+{
         if(previousTime === null){
             previousTime = currentTime;
             requestAnimationFrame(gameLoop);
             return;
         }
 
-       const  frameTime = currentTime - previousTime; // to move the same speed doesnt matter the windows frame rate 
-        previousTime = currentTime;
-        // console.log(frameTime);
-        clearScreen();
+    const  frameTime = currentTime - previousTime; // to move the same speed doesnt matter the windows frame rate 
+    previousTime = currentTime;
+    clearScreen();
+        
+
+
+    if(!gameOver && !waitingToStart && !gameComplete)
+    {
+        // update game objects
+        background.update(gameSpeed, frameTime);
+        cat.update(gameSpeed, frameTime);
+        cactusController.update(gameSpeed , frameTime); 
+        ground.update(gameSpeed, frameTime);
+        coinController.update(gameSpeed, frameTime);
 
 
 
-    if(!gameOver && !waitingToStart){
-    // update game objects
-   
-    cat.update(gameSpeed, frameTime);
-    cactusController.update(gameSpeed , frameTime)
-    ground.update(gameSpeed, frameTime);
+        coinController.checkCollisionsWith(cat, () => {
+            coinCounter++;
+            if (coinCounter >= 1) {
+                // gameOver = true;
+                // showGameOver();
+                gameComplete = true;
+                gameFinish();
+            }
+        });
+
+
+        // coinController.checkCollisionsWith(cat); 
+
+        // if (coinController.coins.filter(coin => coin.collected).length >= 10) {
+        //     gameOver = true;
+        //     showGameOver();
+        // }
     }
+    
 
-    if(!gameOver && cactusController.collideWith(cat)){
+
+
+    // if(!gameOver && cactusController.collideWith(cat)){
+    //     gameOver = true;
+    //     setupGameReset();
+    // }
+    
+    
+
+    // draw game objects 
+    
+    background.draw();
+    ground.draw();
+    coinController.draw();
+    cactusController.draw();
+    cat.draw();
+    
+    drawScore();
+
+    // if(coinController.collideWith(cat)){
+    //     coinCounter++;
+    //     gameOver = false; 
+       
+    // }
+    if (!gameOver && cactusController.collideWith(cat)) 
+    {
         gameOver = true;
         setupGameReset();
     }
 
 
-    // draw game objects 
-
-    ground.draw();
-    cactusController.draw();
-    cat.draw();
-
-
     if(gameOver){
         showGameOver()
+    }
+     
+    if(gameComplete){
+        gameFinish();
     }
 
     if(waitingToStart){
         showStartGameText();
     }
-
-
         requestAnimationFrame(gameLoop);
 }
-
 
 requestAnimationFrame(gameLoop);
 

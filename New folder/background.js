@@ -1,4 +1,4 @@
-export default class Ground{
+export default class Background{
     constructor (ctx, width, height, speed, scaleRatio){
 
         this.ctx = ctx;
@@ -11,8 +11,8 @@ export default class Ground{
         this.x = 0;
         this.y = this.canvas.height - this.height ;
 
-        this.groundImage = new Image();
-        this.groundImage.src = "./gr.png";
+        this.backgroundImage = new Image();
+        this.backgroundImage.src = "./untitled.png";
        
 
     }
@@ -23,14 +23,14 @@ export default class Ground{
     }
     draw(){
         this.ctx.drawImage(
-            this.groundImage, 
-            this.x, 
+            this.backgroundImage, 
+            this.x,  
             this.y, 
             this.width, 
             this.height);
 
             this.ctx.drawImage(
-                this.groundImage, 
+                this.backgroundImage, 
                 this.x + this.width, 
                 this.y, 
                 this.width, 
@@ -41,7 +41,5 @@ export default class Ground{
                     this.x = 0;
                 }
     }
-    reset(){
-        this.x = 0;
-    }
+
 }
