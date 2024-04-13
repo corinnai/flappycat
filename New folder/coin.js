@@ -7,7 +7,14 @@ export default class Coin {
         this.height = height;
         this.image = image;
       }
-  
+
+
+      
+    moveToRightEdge(canvasWidth) {
+        this.x = canvasWidth + this.width + 70; // Move the coin to just outside the right edge of the canvas
+    }
+
+
       update(speed, gameSpeed, frameTime, scaleRatio){
           this.x -= speed * gameSpeed * frameTime * scaleRatio;
       }
@@ -22,7 +29,7 @@ export default class Coin {
       }
   
       collideWith(sprite){
-          const adjustBy = 1.5;
+          const adjustBy = 1;
   
           if(
               sprite.x < this.x + this.width / adjustBy &&

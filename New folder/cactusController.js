@@ -18,7 +18,7 @@ export default class CactusController {
     }
 
     setNextCactusTime(){
-        const num = this.getRandomNumber(
+        const num = this.getRandomNumber( // generate a random number between min and max interval
              this.cactus_interval_min , 
              this.cactus_interval_max);
 
@@ -26,7 +26,7 @@ export default class CactusController {
         // console.log(this.nextCactusInterval);
     }
 
-    getRandomNumber(min, max){
+    getRandomNumber(min, max){// generate a random integer between min and max 
         return Math.floor(Math.random() * (max- min + 1) + min); // to get a random nr between a min and a max 
     }
 
@@ -34,7 +34,7 @@ export default class CactusController {
         const index = this.getRandomNumber(0, this.cactusImages.length - 1);
         const cactusImage = this.cactusImages[index];
         const x = this.canvas.width * 1.5;
-        const y = this.canvas.height - cactusImage.height -13;
+        const y = this.canvas.height - cactusImage.height - 12 * this.scaleRatio;
 
         const cactus = new Cactus( 
             this.ctx, 
@@ -45,6 +45,7 @@ export default class CactusController {
             cactusImage.image);
 
             this.cacti.push(cactus);
+            console.log(cactus);
     }
 
     update( gameSpeed, frameTime){

@@ -1,18 +1,20 @@
+// import CactusController from "./cactusController.js";
 import Coin from "./coin.js";
 
 export default class CoinController {
-        coin_interval_min = 1900;
-        coin_interval_max = 2000;
+        coin_interval_min = 4000;
+        coin_interval_max = 5000;
 
     nextCoinInterval = null;
     coins = [];
 
-    constructor ( ctx, coinImages , scaleRatio, speed ){
+    constructor ( ctx, coinImages , scaleRatio, speed,  ){
         this.ctx = ctx;
         this.canvas = ctx.canvas;
         this.coinImages = coinImages;
         this.scaleRatio = scaleRatio;
         this.speed = speed; 
+        
 
         this.setNextCoinTime();
     }
@@ -23,18 +25,20 @@ export default class CoinController {
              this.coin_interval_max);
 
         this.nextCoinInterval = num;
-        // console.log(this.nextCactusInterval);
+       
     }
 
     getRandomNumber(min, max){
         return Math.floor(Math.random() * (max- min + 1) + min); // to get a random nr between a min and a max 
     }
+    
+
 
     createCoin(){
         const coinNumber = this.getRandomNumber(0, this.coinImages.length - 1);
         const coinImage = this.coinImages[coinNumber];
         const x = this.canvas.width * 1.5 ;
-        const y = this.canvas.height - coinImage.height - 120;
+        const y = this.canvas.height - coinImage.height - this.canvas.height/2 * this.scaleRatio;
 
         const coin = new Coin( 
             this.ctx, 
@@ -44,35 +48,39 @@ export default class CoinController {
             coinImage.height, 
             coinImage.image);
 
-            this.coins.push(coin);
+            this.coins.push(coin); 
     }
 
+    
+
+
     update( gameSpeed, frameTime){
+
+        
+
         if(this.nextCoinInterval <= 0 ){
             //create cactus
             this.createCoin();
             this.setNextCoinTime();
-
         }
+
+
         this.nextCoinInterval -= frameTime;
         
 
         this.coins.forEach((coin)=> {
             if (!coin.collected) {
                 coin.update(this.speed, gameSpeed, frameTime, this.scaleRatio);
+                console.log(coin.x)
             }
         });
 
-        // this.coins = this.coins.filter((coin) => coin.x > -coin.width);// to clear the cactus of screen // Remove collected coins from the update loop
+
+       // Remove collected coins from the update loop
         this.coins = this.coins.filter((coin) => !coin.collected && coin.x > -coin.width);
-
-        // console.log(this.coins.length);
-
     }
 
-    // draw() {
-    //     this.coins.forEach((coin) => coin.draw());
-    // }
+    
     draw() {
         this.coins.forEach((coin) => {
             if (!coin.collected) {
@@ -81,17 +89,15 @@ export default class CoinController {
         });
     }
 
-    // collideWith(sprite){
-    //     return this.coins.some(coin => coin.collideWith(sprite));
-
-    // }
-    // checkCollisionsWith(sprite) {
-    //     this.coins.forEach(coin => {
-    //         if (coin.collideWith(sprite)) {
-    //             coin.collected = true;  // Mark the coin as collected
-    //         }
-    //     });
-    // }
+    checkCoinCactusCollisions(cacti) {
+        this.coins.forEach(coin => {
+            cacti.forEach(cactus => {
+                if (!coin.collected && coin.collideWith(cactus)) {
+                    coin.moveToRightEdge(this.canvas.width);
+                }
+            });
+        });
+    }
 
     // In CoinController
     checkCollisionsWith(sprite, onCollectCallback) {
